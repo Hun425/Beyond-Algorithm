@@ -1,4 +1,6 @@
-# 🧠 알고리즘 스터디
+<img width="200" height="200" alt="image" src="https://github.com/user-attachments/assets/e58733d9-e4df-4e7c-9693-4077522bd895" />
+
+# 알고리즘 스터디
 
 조윤식의 실력을 나머지 3명이 따라잡는 그날까지 이 스터디는 계속된다.......
 
@@ -14,6 +16,7 @@
 - 문제는 **LeetCode Daily Challenge 우선**
   - 난이도가 너무 높다고 판단되면 자유롭게 다른 문제로 대체 가능 (NeetCode 150, Blind 75, 백준 등 무관)
 - 각자 문제를 풀고 **PR로 제출** → 스터디원 중 **최소 1명 이상 Approve** 받아야 merge
+- [리트코드 링크](https://leetcode.com/)
 
 ## 📁 저장소 구조
 
