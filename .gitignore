@@ -1,0 +1,25 @@
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 로컬 실행용 스크래치 파일
+/main.kt
+
+# 빌드 산출물
+out/
+build/
+*.class
+*.jar
+
+# Python (언어 자유라서 대비)
+__pycache__/
+*.pyc
+.venv/
+
+# Node
+node_modules/
