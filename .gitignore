@@ -15,6 +15,10 @@ out/
 build/
 *.class
 *.jar
+/buildSrc/.gradle/
+/buildSrc/.kotlin/
+/.kotlin/
+/.gradle/
 
 # Python (언어 자유라서 대비)
 __pycache__/
