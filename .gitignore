@@ -13,10 +13,8 @@ Thumbs.db
 # 빌드 산출물
 out/
 build/
-/buildSrc/.gradle/
-/buildSrc/.kotlin/
-/.kotlin/
-/.gradle/
+*.class
+*.jar
 
 # Python (언어 자유라서 대비)
 __pycache__/
