@@ -27,8 +27,11 @@ class Solution {
         val sum = nonZeroDigits.sum()
 
         val result = x * sum.toBigInteger()
-        val mod = (1_000_000_000 + 7).toBigInteger()
 
-        return (result % mod).toInt()
+        return (result % MOD.toBigInteger()).toInt()
+    }
+
+    companion object {
+        private const val MOD = 1_000_000_000 + 7
     }
 }
