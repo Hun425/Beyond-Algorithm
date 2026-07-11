@@ -13,8 +13,6 @@ Thumbs.db
 # 빌드 산출물
 out/
 build/
-*.class
-*.jar
 /buildSrc/.gradle/
 /buildSrc/.kotlin/
 /.kotlin/
