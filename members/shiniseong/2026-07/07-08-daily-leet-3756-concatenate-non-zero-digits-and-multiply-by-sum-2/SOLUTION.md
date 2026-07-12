@@ -40,7 +40,7 @@ class Solution {
             .ifEmpty { "0" }
 
         val result = xSource.reversed().mapIndexed { index, ch ->
-            val number = ch.digitToInt() * (10.0.pow(index)) % MOD
+            val number = ch.digitToInt() * 10.0.pow(index)
             (number * sum) % MOD
         }.sum()
 
@@ -51,7 +51,6 @@ class Solution {
         private const val MOD = 1_000_000_000 + 7
     }
 }
-
 ```
 
 ### 복잡도
