@@ -26,8 +26,8 @@ jobs:
           draft=$(echo "$info" | jq -r .isDraft)
           echo "reviewDecision=$decision labels=$labels draft=$draft"
           if [ "$decision" = "APPROVED" ] && [ "$labels" -ge 1 ] && [ "$draft" = "false" ]; then
-            echo "조건 충족 → squash merge 실행"
-            gh pr merge "$PR" --repo "$GITHUB_REPOSITORY" --squash
+            echo "조건 충족 → merge 실행"
+            gh pr merge "$PR" --repo "$GITHUB_REPOSITORY" --merge
           else
             echo "조건 미충족 → merge 대기 (approve 3개 + 라벨 1개 이상 필요)"
           fi
