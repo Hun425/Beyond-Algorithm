@@ -18,6 +18,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR: ${{ github.event.pull_request.number }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           info=$(gh pr view "$PR" --repo "$GITHUB_REPOSITORY" --json state,reviewDecision,labels,isDraft)
           state=$(echo "$info" | jq -r .state)
@@ -32,6 +33,8 @@ jobs:
           if [ "$decision" = "APPROVED" ] && [ "$labels" -ge 1 ] && [ "$draft" = "false" ]; then
             echo "조건 충족 → merge 실행"
             gh pr merge "$PR" --repo "$GITHUB_REPOSITORY" --merge
+            echo "head 브랜치 삭제: $HEAD_REF"
+            gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$HEAD_REF" || echo "브랜치가 이미 삭제됨"
           else
             echo "조건 미충족 → merge 대기 (approve 3개 + 라벨 1개 이상 필요)"
           fi
