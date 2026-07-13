@@ -12,6 +12,7 @@ week_end = this_monday - datetime.timedelta(days=1)
 
 # members/<유저>/<YYYY-MM>/<MM-DD>-... 경로에서 날짜 파싱
 entries = {}
+unrecognized = []
 for member in sorted(os.listdir("members"), key=str.lower):
     mdir = os.path.join("members", member)
     if not os.path.isdir(mdir):
@@ -20,16 +21,22 @@ for member in sorted(os.listdir("members"), key=str.lower):
     for month in os.listdir(mdir):
         mpath = os.path.join(mdir, month)
         ym = re.match(r"^(\d{4})-\d{2}$", month)
-        if not (ym and os.path.isdir(mpath)):
+        if not ym:
+            unrecognized.append(f"{mpath} (월 폴더가 YYYY-MM 형식이 아님)")
+            continue
+        if not os.path.isdir(mpath):
+            unrecognized.append(f"{mpath} (월 위치에 폴더가 아닌 파일)")
             continue
         year = int(ym.group(1))
         for entry in os.listdir(mpath):
             md = re.match(r"^(\d{2})-(\d{2})", entry)
             if not md:
+                unrecognized.append(f"{mpath}/{entry} (MM-DD 접두어 없음)")
                 continue
             try:
                 d = datetime.date(year, int(md.group(1)), int(md.group(2)))
             except ValueError:
+                unrecognized.append(f"{mpath}/{entry} (날짜가 유효하지 않음)")
                 continue
             entries[member].append((d, entry))
 
@@ -48,6 +55,14 @@ table_md = "\n".join(table)
 body = f"## 📊 주간 문제풀이 리포트\n\n**기간**: {range_str} (월~일)\n\n{table_md}\n"
 if details:
     body += "\n### 풀이 목록\n" + "\n".join(details) + "\n"
+if unrecognized:
+    body += (
+        "\n### ⚠️ 형식 미인식 (집계 제외)\n"
+        "아래 항목은 `MM-DD` 접두어 규칙에 맞지 않아 집계에서 빠졌어요. "
+        "풀이가 맞다면 이름을 규칙에 맞게 바꿔주세요.\n"
+        + "\n".join(f"- `{u}`" for u in unrecognized)
+        + "\n"
+    )
 
 with open("report.md", "w", encoding="utf-8") as f:
     f.write(body)
