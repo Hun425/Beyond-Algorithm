@@ -12,7 +12,6 @@ permissions:
 
 jobs:
   auto-merge:
-    if: github.event.pull_request.state == 'open'
     runs-on: ubuntu-latest
     steps:
       - name: Merge if approved and labeled
@@ -20,11 +19,16 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR: ${{ github.event.pull_request.number }}
         run: |
-          info=$(gh pr view "$PR" --repo "$GITHUB_REPOSITORY" --json reviewDecision,labels,isDraft)
+          info=$(gh pr view "$PR" --repo "$GITHUB_REPOSITORY" --json state,reviewDecision,labels,isDraft)
+          state=$(echo "$info" | jq -r .state)
           decision=$(echo "$info" | jq -r .reviewDecision)
           labels=$(echo "$info" | jq '.labels | length')
           draft=$(echo "$info" | jq -r .isDraft)
-          echo "reviewDecision=$decision labels=$labels draft=$draft"
+          echo "state=$state reviewDecision=$decision labels=$labels draft=$draft"
+          if [ "$state" != "OPEN" ]; then
+            echo "PR이 열려있지 않음 → 종료"
+            exit 0
+          fi
           if [ "$decision" = "APPROVED" ] && [ "$labels" -ge 1 ] && [ "$draft" = "false" ]; then
             echo "조건 충족 → merge 실행"
             gh pr merge "$PR" --repo "$GITHUB_REPOSITORY" --merge
