@@ -1,0 +1,33 @@
+name: Auto Merge
+
+on:
+  pull_request:
+    types: [labeled]
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    if: github.event.pull_request.state == 'open'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge if approved and labeled
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          info=$(gh pr view "$PR" --repo "$GITHUB_REPOSITORY" --json reviewDecision,labels,isDraft)
+          decision=$(echo "$info" | jq -r .reviewDecision)
+          labels=$(echo "$info" | jq '.labels | length')
+          draft=$(echo "$info" | jq -r .isDraft)
+          echo "reviewDecision=$decision labels=$labels draft=$draft"
+          if [ "$decision" = "APPROVED" ] && [ "$labels" -ge 1 ] && [ "$draft" = "false" ]; then
+            echo "조건 충족 → squash merge 실행"
+            gh pr merge "$PR" --repo "$GITHUB_REPOSITORY" --squash
+          else
+            echo "조건 미충족 → merge 대기 (approve 3개 + 라벨 1개 이상 필요)"
+          fi
