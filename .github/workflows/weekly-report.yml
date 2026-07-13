@@ -25,6 +25,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          MENTIONS=$(gh api "repos/$GITHUB_REPOSITORY/collaborators" --jq '.[].login' | sed 's/^/@/' | paste -sd' ' -)
+          printf '\n---\ncc %s\n' "$MENTIONS" >> report.md
           gh issue create --repo "$GITHUB_REPOSITORY" \
             --title "📊 주간 문제풀이 리포트 (${{ steps.gen.outputs.range }})" \
             --body-file report.md
