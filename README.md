@@ -71,7 +71,7 @@ study-root/
 5. **3명 Approve** 받으면 merge
 6. 리뷰는 되도록 **24시간 이내** 완료를 목표로 함
 7. PR은 태그가 달려있지 않으면 merge 할 수 없음
-7.1 성공은 SUCCESS, 실패는 FAILED, 도움을 받고 계속 풀어보고 싶으면 HELP로 표시한다.
+8. 성공은 SUCCESS, 실패는 FAILED, 도움을 받고 계속 풀어보고 싶으면 HELP로 표시한다.
 
 ## 🗓️ 진행 일정
 
