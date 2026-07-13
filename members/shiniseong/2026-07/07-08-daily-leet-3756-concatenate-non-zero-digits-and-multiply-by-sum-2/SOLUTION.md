@@ -2,17 +2,16 @@
 
 ### 접근 방법
 
-1. 쿼리의 엘레멘트 대로 주어진 문자열 substring후 Leetcode 3754 번 스타일로 연산.
-2. 수학적 원리는 잘 모르겠지만 나머지연산을 자릿수별로 미리해도 결과가 똑같길래 적용해 봤음...
+1. 수학적 원리는 잘 모르겠지만 나머지연산을 자릿수별로 미리해도 결과가 똑같길래 적용해 봤음...
 
 ### 문제점
 
-1. 몇개 테스트에서 계속 실패함 (원인을 모르겠습니다..)
+1. 많은 케이스를 통과하게 되었으나 결국 * 10으로 누적해나가는 과정에서 연산 문제가 발생함. 미쳐버리겠슴다..
 
 ### 코드
 
 ```kotlin
-import kotlin.math.pow
+package y2026m07.m07d08DailyLeet3756ConcatenateNonZeroDigitsAndMultiplyBySum2
 
 class Solution {
     fun sumAndMultiply(
@@ -31,24 +30,27 @@ class Solution {
     private fun sumAndMultiPlyNonZero(nString: String): Int {
         val nonZeroDigits = nString
             .filter { it != '0' }
-            .map { it.digitToInt() }
 
-        val sum = nonZeroDigits.sum()
+        var sum = 0.toBigInteger()
+        nonZeroDigits.forEach { ch ->
+            sum = (sum + ch.digitToInt().toBigInteger()) % MOD
+        }
 
         val xSource = nonZeroDigits
-            .joinToString("")
             .ifEmpty { "0" }
 
-        val result = xSource.reversed().mapIndexed { index, ch ->
-            val number = ch.digitToInt() * (10.0.pow(index)) % MOD
-            (number * sum) % MOD
-        }.sum()
+        var x = 0.toBigInteger()
+        xSource.forEach { ch ->
+            x = (x * 10.toBigInteger()) % MOD
+            x += ch.digitToInt().toBigInteger() * sum
+            x %= MOD
+        }
 
-        return (result % MOD).toInt()
+        return (x % MOD).toInt()
     }
 
     companion object {
-        private const val MOD = 1_000_000_000 + 7
+        private val MOD = (1_000_000_000 + 7).toBigInteger()
     }
 }
 
