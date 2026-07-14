@@ -47,4 +47,15 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add README.md
-          git diff --cached --quiet || { git commit -m "docs: 주간 문제풀이 현황 갱신 (${{ steps.gen.outputs.range }})"; git push; }
+          if git diff --cached --quiet; then
+            echo "README 변경 없음 → 종료"
+            exit 0
+          fi
+          git commit -m "docs: 주간 문제풀이 현황 갱신 (${{ steps.gen.outputs.range }})"
+          # 실행 중 main에 다른 커밋(auto-merge 등)이 들어오면 push가 거절되므로 rebase 후 재시도
+          for i in 1 2 3; do
+            git push origin HEAD:main && exit 0
+            echo "push 거절됨 → rebase 후 재시도 ($i/3)"
+            git pull --rebase origin main
+          done
+          exit 1
