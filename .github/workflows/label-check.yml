@@ -1,0 +1,33 @@
+name: Label Check
+
+on:
+  pull_request:
+    types: [opened, reopened, labeled, unlabeled, synchronize]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  label-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check labels
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          EVENT: ${{ github.event.action }}
+        run: |
+          count=$(gh pr view "$PR" --repo "$GITHUB_REPOSITORY" --json labels --jq '.labels | length')
+          echo "labels=$count"
+          if [ "$count" -ge 1 ]; then
+            echo "라벨 있음 ✅"
+            exit 0
+          fi
+          if [ "$EVENT" = "opened" ] || [ "$EVENT" = "reopened" ]; then
+            gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" \
+              --body "⚠️ @$AUTHOR 라벨이 없어요! 라벨을 하나 붙여주세요 — 라벨이 없으면 자동 머지가 되지 않아요."
+          fi
+          echo "라벨 없음 ❌"
+          exit 1
