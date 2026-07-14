@@ -1,6 +1,10 @@
 import datetime
 import os
 import re
+from urllib.parse import quote
+
+REPO = os.environ.get("GITHUB_REPOSITORY", "Hun425/Beyond-Algorithm")
+BRANCH = os.environ.get("GITHUB_REF_NAME", "main")
 
 KST = datetime.timezone(datetime.timedelta(hours=9))
 GOAL = 2
@@ -38,7 +42,8 @@ for member in sorted(os.listdir("members"), key=str.lower):
             except ValueError:
                 unrecognized.append(f"{mpath}/{entry} (날짜가 유효하지 않음)")
                 continue
-            entries[member].append((d, entry))
+            epath = f"{mpath}/{entry}"
+            entries[member].append((d, entry, epath, os.path.isdir(epath)))
 
 table = ["| 멤버 | 풀이 | 목표(주 2회) |", "|---|---|---|"]
 details = []
@@ -47,7 +52,12 @@ for member, items in entries.items():
     mark = "✅" if len(week_items) >= GOAL else "❌"
     table.append(f"| {member} | {len(week_items)}회 | {mark} |")
     if week_items:
-        details.append(f"- **{member}**: " + ", ".join(e[1] for e in week_items))
+        # 파일이면 blob, 폴더면 tree 뷰로 연결 (이슈 본문에서는 상대 링크가 안 되므로 절대 URL 사용)
+        links = ", ".join(
+            f"[{name}](https://github.com/{REPO}/{'tree' if isdir else 'blob'}/{BRANCH}/{quote(path.replace(os.sep, '/'))})"
+            for _, name, path, isdir in week_items
+        )
+        details.append(f"- **{member}**: {links}")
 
 range_str = f"{week_start} ~ {week_end}"
 table_md = "\n".join(table)
