@@ -13,7 +13,17 @@ jobs:
   report:
     runs-on: ubuntu-latest
     steps:
+      # 룰셋(main 보호)을 통과해 push하기 위한 GitHub App 토큰 (App은 룰셋 bypass 목록에 등록됨)
+      - name: Generate app token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Generate report
         id: gen
