@@ -7,23 +7,28 @@
 ### 코드
 
 ```kotlin
-class NumArray(
-    private val nums: IntArray,
-) {
+class NumArray(nums: IntArray) {
+    private val prefixSum = IntArray(nums.size + 1)
+
+    init {
+        prefixSum[0] = 0
+        for (idx in 1..nums.size) {
+            prefixSum[idx] = prefixSum[idx - 1] + nums[idx - 1]
+        }
+    }
+
     fun sumRange(
         left: Int,
         right: Int,
-    ): Int = nums
-        .slice(left..right)
-        .sum()
+    ): Int = prefixSum[right + 1] - prefixSum[left]
 }
 ```
 
 ### 복잡도
 
-- 시간복잡도: (슬라이스(n) + sum(n)) * 호출 횟수(q) 2nq = O(nq)
+- 시간복잡도: 처음 누적합 연산 O(n). sumRagne 시간 복잡도 O(1). 호출 q번 고려시 O(q) => O(n)
 - 공간복잡도: 모르겠음
 
 ### 회고
 
-- 윤식님이 누적합 배우라고 던져주신 문제인데.. 그냥 kotlin 반복자 api로 해결함.. 다시 풀어 봐야할 필요가 있음. 
+- 윤식님을 받들어 다시 풀어봄. 대 윤 식
