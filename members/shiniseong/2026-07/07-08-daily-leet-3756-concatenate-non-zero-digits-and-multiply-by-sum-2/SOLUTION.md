@@ -2,11 +2,12 @@
 
 ### 접근 방법
 
-1. 수학적 원리는 잘 모르겠지만 나머지연산을 자릿수별로 미리해도 결과가 똑같길래 적용해 봤음...
+1. x, sum 을 좌측에서 부터 미리 연산하여 준비.
+2. 자릿수 보정에 쓰일 수 있도록 10의 제곱도 미리 연산.
+3. 이 때, MOD연산을 미리 적용. (나머지 연산의 분배법칙)
+4. prefixX에 나머지 연산이 적용되어 있어, 오른쪽 파트에서 왼쪽 파트를 뺼 때 음수가 될 수 있으므로 나머지를 더하여 보정.
 
 ### 문제점
-
-1. 많은 케이스를 통과하게 되었으나 결국 * 10으로 누적해나가는 과정에서 연산 문제가 발생함. 미쳐버리겠슴다..
 
 ### 코드
 
@@ -17,40 +18,43 @@ class Solution {
     fun sumAndMultiply(
         s: String,
         queries: Array<IntArray>,
-    ): IntArray = queries.map { query ->
-        val start = query[0]
-        val end = query[1] + 1
+    ): IntArray {
+        val length = s.length
+        val nonZeroCount = IntArray(length + 1)
+        val digitSum = LongArray(length + 1)
+        val prefixX = LongArray(length + 1)
+        val powerOfTen = LongArray(length + 1)
+        powerOfTen[0] = 1L
 
-        val substring = s.substring(start, end)
-        sumAndMultiPlyNonZero(substring)
-    }
-        .toTypedArray()
-        .toIntArray()
+        s.forEachIndexed { idx, ch ->
+            val digit = ch.digitToInt()
+            digitSum[idx + 1] = digitSum[idx] + digit
+            powerOfTen[idx + 1] = powerOfTen[idx] * 10L % MOD
 
-    private fun sumAndMultiPlyNonZero(nString: String): Int {
-        val nonZeroDigits = nString
-            .filter { it != '0' }
-
-        var sum = 0.toBigInteger()
-        nonZeroDigits.forEach { ch ->
-            sum = (sum + ch.digitToInt().toBigInteger()) % MOD
+            if (digit == 0) {
+                nonZeroCount[idx + 1] = nonZeroCount[idx]
+                prefixX[idx + 1] = prefixX[idx]
+            } else {
+                nonZeroCount[idx + 1] = nonZeroCount[idx] + 1
+                prefixX[idx + 1] = (prefixX[idx] * 10L + digit) % MOD
+            }
         }
 
-        val xSource = nonZeroDigits
-            .ifEmpty { "0" }
+        return queries.map { query ->
+            val left = query[0]
+            val right = query[1]
 
-        var x = 0.toBigInteger()
-        xSource.forEach { ch ->
-            x = (x * 10.toBigInteger()) % MOD
-            x += ch.digitToInt().toBigInteger() * sum
-            x %= MOD
-        }
+            val gapNonZeroCount = nonZeroCount[right + 1] - nonZeroCount[left]
+            val xLeftPart = prefixX[left] * powerOfTen[gapNonZeroCount] % MOD
+            val x = (prefixX[right + 1] - xLeftPart + MOD) % MOD
+            val sum = digitSum[right + 1] - digitSum[left]
 
-        return (x % MOD).toInt()
+            (x * sum % MOD).toInt()
+        }.toIntArray()
     }
 
     companion object {
-        private val MOD = (1_000_000_000 + 7).toBigInteger()
+        private const val MOD = 1_000_000_007L
     }
 }
 
@@ -58,8 +62,8 @@ class Solution {
 
 ### 복잡도
 
-- 시간복잡도: 모름
-- 공간복잡도: 망함
+- 시간복잡도: O (s.length + queries.size + queries.size) = O (n)
+- 공간복잡도: 모름
 
 ### 회고
 
@@ -67,4 +71,5 @@ class Solution {
 
 ### 기타
 
-- 아직 전부 풀이한 문제가 아닙니다. 답안을 보지 않고 풀기위해 큰수를 어떻게 다룰지 고민중 입니다.
+- 303 문제를 풀고도, 완전히 혼자 풀지는 못함.. 윤식님 답안과 AI의 도움을 너무 많이 받았음.
+- Failed로 표기해놓고 오답 복습 필요.
