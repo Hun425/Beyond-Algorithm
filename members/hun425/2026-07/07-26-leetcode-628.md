@@ -26,4 +26,5 @@ class Solution {
 
 ### 회고
 
-- 음수 두 개의 곱이 양수가 되는 케이스를 놓치지 않는 게 핵심이었다
+- 음수 두 개의 곱이 양수가 되는 케이스를 놓치지 않는 게 핵심
+- kotlin sort는 java의 dual-pivot quicksort를 사용하며, 작은 구간은 insertion sort로 최적화되어 있음을 알게됨
