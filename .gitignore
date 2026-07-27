@@ -10,6 +10,10 @@ Thumbs.db
 # 로컬 실행용 스크래치 파일
 /main.kt
 
+# Claude 풀이 리뷰 (로컬 전용)
+/reviews/
+.claude
+
 # 빌드 산출물
 out/
 build/
