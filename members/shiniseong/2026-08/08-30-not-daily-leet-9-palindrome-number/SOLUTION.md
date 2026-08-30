@@ -1,4 +1,4 @@
-## [문제명](문제 링크)
+## [9. Palindrome Number](https://leetcode.com/problems/palindrome-number/description/)
 
 ### 접근 방법
 
