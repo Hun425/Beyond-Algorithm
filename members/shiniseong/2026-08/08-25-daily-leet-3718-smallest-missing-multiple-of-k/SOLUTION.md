@@ -1,4 +1,4 @@
-## [문제명](문제 링크)
+## [3718. Smallest Missing Multiple of K](https://leetcode.com/problems/smallest-missing-multiple-of-k/description/?envType=daily-question&envId=2026-08-25)
 
 ### 접근 방법
 
