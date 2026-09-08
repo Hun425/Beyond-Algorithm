@@ -52,7 +52,7 @@ def fetch_prs(since, members):
     raw = gh_json(
         "pr", "list", "--repo", REPO, "--state", "all", "--limit", "200",
         "--search", f"created:>={since.isoformat()}",
-        "--json", "number,title,author,createdAt,labels,files,reviews,url,headRefOid",
+        "--json", "number,title,author,createdAt,labels,files,reviews,url,headRefOid,state",
     )
     prs = []
     for r in raw:
@@ -77,8 +77,23 @@ def fetch_prs(since, members):
             title=r["title"],
             url=r["url"],
             files=files,
+            is_excuse=wl.is_excuse_pr(files),
+            state=r.get("state", ""),
+            head=r["headRefOid"],
         ))
     return prs
+
+
+def pending_excuses(prs):
+    """아직 열려 있는 유예 신청 PR의 excuses.json 내용. close된 것은 미동의로 보고 제외."""
+    out = []
+    for p in prs:
+        if p.is_excuse and p.state == "OPEN":
+            try:
+                out.extend(json.loads(fetch_file(wl.EXCUSES_FILE, p.head) or "[]"))
+            except ValueError:
+                pass
+    return out
 
 
 def fetch_common_issue(week_start, week_end):
@@ -146,7 +161,7 @@ def render(range_str, week_end, common, results, counts, prev_common, skipped):
         f"**공통 문제**: {common_line}",
         f"**리뷰 마감**: {wl.review_deadline(week_end):%Y-%m-%d %H:%M} KST", "",
         table_md, "",
-        "> 이행 기준: 공통 문제 1개 **또는** 자유 문제 2개 / 다른 멤버 PR 전부 리뷰. "
+        "> 이행 기준: 공통 문제 1개 **또는** 자유 문제 2개 / 다른 멤버 풀이·유예 PR 전부 리뷰. "
         "하나라도 빠지면 그 주 경고 1회. 2회 누적 시 커피 ☕ (유예 승인된 주는 제외)",
     ]
     if prev_common:
@@ -219,6 +234,7 @@ def main():
     if os.path.exists(EXCUSES_PATH):
         with open(EXCUSES_PATH, encoding="utf-8") as f:
             excuses = json.load(f)
+    excuses = excuses + pending_excuses(prs)
     excused = wl.excused_members(excuses, week_start, week_end, members)
 
     results = {}
