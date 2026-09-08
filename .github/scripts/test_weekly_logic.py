@@ -242,3 +242,26 @@ class Excuses(unittest.TestCase):
     def test_malformed_entry_skipped(self):
         excuses = [{"member": "hun425", "from": "not-a-date", "to": "2026-09-10"}, {"member": "a"}]
         self.assertEqual(wl.excused_members(excuses, *self.WEEK), {})
+
+
+class ExcusePRReview(unittest.TestCase):
+    def test_excuse_pr_is_a_review_target(self):
+        prs = [wl.PR(number=1, author="a", created=dt("2026-09-05T10:00"), entries=set(), is_excuse=True)]
+        r = wl.judge_review("b", prs, WEEK_END)
+        self.assertEqual((r.done, r.total), (0, 1))
+        self.assertFalse(r.met)
+
+    def test_excuse_pr_reviewed_in_time(self):
+        prs = [wl.PR(number=1, author="a", created=dt("2026-09-05T10:00"), entries=set(), is_excuse=True,
+                     reviews=[("b", dt("2026-09-06T10:00"))])]
+        self.assertTrue(wl.judge_review("b", prs, WEEK_END).met)
+
+    def test_excuse_pr_not_counted_as_solution(self):
+        prs = [wl.PR(number=1, author="a", created=dt("2026-09-05T10:00"), entries=set(), is_excuse=True)]
+        r = wl.judge_solving("a", prs, "x", None, [], week_end=WEEK_END)
+        self.assertEqual(r.count, 0)
+        self.assertFalse(r.met)
+
+    def test_is_excuse_pr_by_files(self):
+        self.assertTrue(wl.is_excuse_pr([".github/excuses.json"]))
+        self.assertFalse(wl.is_excuse_pr(["members/a/2026-09/09-05-x.md"]))

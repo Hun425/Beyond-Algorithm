@@ -3,7 +3,7 @@
 이행 기준 (둘 중 하나):
   1. 그 주 공통 문제를 풀었다 (또는 직전 주 공통 문제를 HELP 라벨로 냈고 이번 주에 다시 풀었다)
   2. 자유 문제를 2개 이상 풀었다
-리뷰 기준: 그 주 다른 멤버의 풀이 PR 전부에 화요일 23:59 KST까지 리뷰를 남겼다
+리뷰 기준: 그 주 다른 멤버의 풀이 PR과 유예 신청 PR 전부에 화요일 23:59 KST까지 리뷰를 남겼다
 경고: 풀이/리뷰 중 하나라도 미이행이면 그 주 1회 누적. 커피 체크 시 0회로 초기화.
 """
 import copy
@@ -30,6 +30,9 @@ class PR:
     title: str = ""
     url: str = ""
     files: list = field(default_factory=list)  # PR이 건드린 전체 경로
+    is_excuse: bool = False  # 유예 신청 PR (excuses.json 변경)
+    state: str = ""  # OPEN | MERGED | CLOSED
+    head: str = ""  # head commit sha
 
 
 @dataclass
@@ -96,6 +99,13 @@ def member_key(login, members):
     return None
 
 
+EXCUSES_FILE = ".github/excuses.json"
+
+
+def is_excuse_pr(files):
+    return EXCUSES_FILE in files
+
+
 def solution_entries(files, member):
     prefix = f"members/{member}/"
     out = set()
@@ -144,7 +154,7 @@ def judge_solving(member, prs, common_slug, prev_common_slug, prev_prs, week_end
 
 def judge_review(member, prs, week_end):
     deadline = review_deadline(week_end)
-    targets = [p for p in prs if p.author != member and p.entries and _in_week(p, week_end)]
+    targets = [p for p in prs if p.author != member and (p.entries or p.is_excuse) and _in_week(p, week_end)]
     missed = [
         p for p in targets
         if not any(login.lower() == member.lower() and at <= deadline for login, at in p.reviews)
