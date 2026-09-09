@@ -13,6 +13,7 @@ on:
 permissions:
   contents: write
   issues: write
+  pull-requests: read # gh pr list 조회용 (없으면 오류 없이 0건이 돌아옴)
 
 jobs:
   report:
