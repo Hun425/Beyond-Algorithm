@@ -30,11 +30,17 @@ REPORT_ISSUE_QUERY = "주간 문제풀이 리포트 in:title"
 TEXT_EXT = (".md", ".txt", ".kt", ".py", ".java", ".js", ".ts", ".go", ".rs", ".cpp", ".c")
 
 
+def log(*a):
+    print("[report]", *a, file=sys.stderr)
+
+
 # ---------- GitHub 조회 ----------
 
 def gh_json(*args):
-    out = subprocess.run(["gh", *args], check=True, capture_output=True, text=True).stdout
-    return json.loads(out) if out.strip() else []
+    r = subprocess.run(["gh", *args], check=True, capture_output=True, text=True)
+    if r.stderr.strip():
+        log("gh stderr:", r.stderr.strip())
+    return json.loads(r.stdout) if r.stdout.strip() else []
 
 
 def fetch_file(path, ref):
@@ -54,10 +60,12 @@ def fetch_prs(since, members):
         "--search", f"created:>={since.isoformat()}",
         "--json", "number,title,author,createdAt,labels,files,reviews,url,headRefOid,state",
     )
+    log(f"gh pr list returned {len(raw)} PRs (created>={since.isoformat()})")
     prs = []
     for r in raw:
         author = wl.member_key(r["author"]["login"], members)
         if not author:
+            log(f"skip PR #{r['number']}: author {r['author']['login']!r} not in members")
             continue
         files = [f["path"] for f in r.get("files", [])]
         entries = wl.solution_entries(files, author)
@@ -81,6 +89,8 @@ def fetch_prs(since, members):
             state=r.get("state", ""),
             head=r["headRefOid"],
         ))
+        log(f"PR #{r['number']} {author} {r['state']} created={prs[-1].created:%m-%d %H:%M} "
+            f"entries={sorted(entries)} slugs={sorted(slugs)} reviews={len(prs[-1].reviews)}")
     return prs
 
 
@@ -223,6 +233,7 @@ def main():
     range_str = f"{week_start} ~ {week_end}"
 
     members = sorted((m for m in os.listdir("members") if os.path.isdir(os.path.join("members", m))), key=str.lower)
+    log(f"today={today} week={week_start}~{week_end} members={members}")
 
     prs = fetch_prs(prev_start - datetime.timedelta(days=1), members)
     this_prs = [p for p in prs if week_start <= p.created.date() <= week_end]
@@ -236,6 +247,8 @@ def main():
             excuses = json.load(f)
     excuses = excuses + pending_excuses(prs)
     excused = wl.excused_members(excuses, week_start, week_end, members)
+    log(f"this_prs={[p.number for p in this_prs]} prev_prs={[p.number for p in prev_prs]} "
+        f"common={common} prev_common={prev_common} coffee_paid={sorted(coffee_paid)} excused={excused}")
 
     results = {}
     for m in members:
@@ -255,7 +268,7 @@ def main():
 
     if dry:
         print(body)
-        print("coffee_paid:", sorted(coffee_paid), "| state:", json.dumps(state, ensure_ascii=False), file=sys.stderr)
+        log("state:", json.dumps(state, ensure_ascii=False))
         return
 
     with open("report.md", "w", encoding="utf-8") as f:
