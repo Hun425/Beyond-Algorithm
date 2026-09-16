@@ -103,7 +103,16 @@ EXCUSES_FILE = ".github/excuses.json"
 
 
 def is_excuse_pr(files):
-    return EXCUSES_FILE in files
+    """유예 신청 PR = excuses.json 만 변경한 PR (다른 파일도 바꾼 기능 PR은 제외)."""
+    return list(files) == [EXCUSES_FILE]
+
+
+COMMON_ISSUE_TITLE_RE = re.compile(r"\d+\s*월\s*\d+\s*주차")
+
+
+def is_common_issue_title(title):
+    """'N월 N주차 ...' 형식의 이슈를 공통 문제 이슈로 본다 ('공통' 단어 유무와 무관)."""
+    return bool(COMMON_ISSUE_TITLE_RE.search(title or "")) and "리포트" not in (title or "")
 
 
 def solution_entries(files, member):
