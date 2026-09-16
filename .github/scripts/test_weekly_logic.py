@@ -265,3 +265,21 @@ class ExcusePRReview(unittest.TestCase):
     def test_is_excuse_pr_by_files(self):
         self.assertTrue(wl.is_excuse_pr([".github/excuses.json"]))
         self.assertFalse(wl.is_excuse_pr(["members/a/2026-09/09-05-x.md"]))
+
+
+class CommonIssueMatch(unittest.TestCase):
+    def test_weekly_problem_title_without_gongtong(self):
+        self.assertTrue(wl.is_common_issue_title("9월 2주차 알고리즘 스터디 문제"))
+        self.assertTrue(wl.is_common_issue_title("8월 4주차 알고리즘 스터디 공통 문제"))
+
+    def test_report_and_unrelated_titles_rejected(self):
+        self.assertFalse(wl.is_common_issue_title("📊 주간 문제풀이 리포트 (2026-09-07 ~ 2026-09-13)"))
+        self.assertFalse(wl.is_common_issue_title("버그 제보"))
+
+
+class ExcusePRStrict(unittest.TestCase):
+    def test_only_excuses_file_is_excuse_pr(self):
+        self.assertTrue(wl.is_excuse_pr([".github/excuses.json"]))
+
+    def test_feature_pr_touching_excuses_file_is_not_excuse_pr(self):
+        self.assertFalse(wl.is_excuse_pr([".github/excuses.json", ".github/scripts/weekly_report.py", "README.md"]))

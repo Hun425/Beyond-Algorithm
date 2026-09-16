@@ -25,7 +25,6 @@ import weekly_logic as wl
 REPO = os.environ.get("GITHUB_REPOSITORY", "Hun425/Beyond-Algorithm")
 STATE_PATH = ".github/warnings.json"
 EXCUSES_PATH = ".github/excuses.json"
-COMMON_ISSUE_QUERY = "공통 문제 in:title"
 REPORT_ISSUE_QUERY = "주간 문제풀이 리포트 in:title"
 TEXT_EXT = (".md", ".txt", ".kt", ".py", ".java", ".js", ".ts", ".go", ".rs", ".cpp", ".c")
 
@@ -108,10 +107,13 @@ def pending_excuses(prs):
 
 def fetch_common_issue(week_start, week_end):
     """그 주(월~일)에 생성된 공통 문제 이슈 중 가장 최근 것."""
-    raw = gh_json("issue", "list", "--repo", REPO, "--state", "all", "--limit", "30",
-                  "--search", COMMON_ISSUE_QUERY, "--json", "number,title,body,createdAt,url")
+    # GitHub 검색은 한국어 토큰화가 불안정하므로 검색어 없이 받아서 제목 형식으로 거른다
+    raw = gh_json("issue", "list", "--repo", REPO, "--state", "all", "--limit", "100",
+                  "--json", "number,title,body,createdAt,url")
     found = None
     for r in raw:
+        if not wl.is_common_issue_title(r["title"]):
+            continue
         d = wl.to_kst(r["createdAt"]).date()
         if week_start <= d <= week_end and (found is None or r["number"] > found["number"]):
             found = r
@@ -123,9 +125,11 @@ def fetch_common_issue(week_start, week_end):
     return {"number": found["number"], "url": found["url"], "slug": sorted(slugs)[0]}
 
 
-def fetch_previous_report_body():
-    raw = gh_json("issue", "list", "--repo", REPO, "--state", "all", "--limit", "5",
-                  "--search", REPORT_ISSUE_QUERY, "--json", "number,body,createdAt")
+def fetch_previous_report_body(range_str):
+    """직전 리포트 이슈 본문. 같은 주차로 재실행할 때는 이번 주 리포트를 건너뛴다."""
+    raw = gh_json("issue", "list", "--repo", REPO, "--state", "all", "--limit", "10",
+                  "--search", REPORT_ISSUE_QUERY, "--json", "number,title,body")
+    raw = [r for r in raw if range_str not in r.get("title", "")]
     if not raw:
         return ""
     return max(raw, key=lambda r: r["number"]).get("body", "")
@@ -240,7 +244,7 @@ def main():
     prev_prs = [p for p in prs if prev_start <= p.created.date() <= prev_end]
     common = fetch_common_issue(week_start, week_end)
     prev_common = fetch_common_issue(prev_start, prev_end)
-    coffee_paid = wl.parse_coffee_checks(fetch_previous_report_body())
+    coffee_paid = wl.parse_coffee_checks(fetch_previous_report_body(range_str))
     excuses = []
     if os.path.exists(EXCUSES_PATH):
         with open(EXCUSES_PATH, encoding="utf-8") as f:
