@@ -175,7 +175,7 @@ def render(range_str, week_end, common, results, counts, prev_common, skipped):
         f"**공통 문제**: {common_line}",
         f"**리뷰 마감**: {wl.review_deadline(week_end):%Y-%m-%d %H:%M} KST", "",
         table_md, "",
-        "> 이행 기준: 공통 문제 1개 **또는** 자유 문제 2개 / 다른 멤버 풀이·유예 PR 전부 리뷰. "
+        "> 이행 기준: 공통 문제 1개 **또는** 자유 문제 2개 / 다른 멤버 풀이 PR 전부 리뷰. "
         "하나라도 빠지면 그 주 경고 1회. 2회 누적 시 커피 ☕ (유예 승인된 주는 제외)",
     ]
     if prev_common:
