@@ -1,15 +1,15 @@
 {
-  "as_of": "2026-09-07 ~ 2026-09-13",
+  "as_of": "2026-09-14 ~ 2026-09-20",
   "base": {
-    "CHOYUNSIG": 1,
-    "hun425": 1,
-    "jaehyeon0415": 1,
-    "shiniseong": 2
-  },
-  "counts": {
     "CHOYUNSIG": 2,
     "hun425": 1,
     "jaehyeon0415": 1,
+    "shiniseong": 0
+  },
+  "counts": {
+    "CHOYUNSIG": 3,
+    "hun425": 2,
+    "jaehyeon0415": 2,
     "shiniseong": 0
   }
 }
